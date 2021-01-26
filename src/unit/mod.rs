@@ -1,6 +1,7 @@
 use std::num::ParseIntError;
 
-pub struct KiB(u64);
+#[derive(Debug)]
+pub struct KiB(pub u64);
 
 impl KiB {
     pub fn try_from_str_byte(s: &str) -> Result<Self, ParseIntError> {
@@ -10,7 +11,8 @@ impl KiB {
 }
 
 #[allow(non_camel_case_types)]
-pub struct ms(u64);
+#[derive(Debug)]
+pub struct ms(pub u64);
 
 impl ms {
     pub fn try_from_str_ns(s: &str) -> Result<Self, ParseIntError> {
