@@ -54,7 +54,8 @@ impl Cgroup {
         let res = self
             .read("cpuacct", "cpuacct.usage")
             .map_err(|e| info!("Fail to read cpu usage: {:?}", e))?;
-        unit::ms::try_from_str_ns(res.trim_end()).map_err(|e| info!("Fail to read cpu usage: {:?}", e))
+        unit::ms::try_from_str_ns(res.trim_end())
+            .map_err(|e| info!("Fail to read cpu usage: {:?}", e))
     }
 
     pub fn reset_mem_usage(&self) -> Result<(), ()> {
@@ -65,7 +66,13 @@ impl Cgroup {
         let res = self
             .read("memory", "memory.max_usage_in_bytes")
             .map_err(|e| info!("Fail to read memory usage: {:?}", e))?;
-        unit::KiB::try_from_str_byte(res.trim_end()).map_err(|e| info!("Fail to read memory usage: {:?}", e))
+        unit::KiB::try_from_str_byte(res.trim_end())
+            .map_err(|e| info!("Fail to read memory usage: {:?}", e))
+    }
+
+    pub fn set_mem_limit(&self, lim: unit::KiB) -> Result<(), ()> {
+        self.write("memory", "memory.limit_in_bytes", &lim.str_byte())
+        .map_err(|e| info!("Fail to set memory limit: {:?}", e))
     }
 
     pub fn reset(&self) -> Result<(), ()> {

@@ -8,10 +8,12 @@ fn main() {
     cg.init().expect("Failed to create control groups");
     let rlim = isolate::ResourceLimit {
         stack_size: isolate::unit::KiB(8 * 1024),
+        cpu_limit: Some(isolate::unit::ms(1000)),
+        mem_limit: None,
     };
     let payload = isolate::Payload::new(
-        "echo".into(),
-        vec!["echo".into(), "hello!".into()],
+        "bash".into(),
+        vec!["echo".into(), "-c".into(), "while :; do true; done".into()],
         vec!["PATH=/bin:/usr/bin".into()],
     );
     let config = isolate::Config { cg, rlim, payload };
