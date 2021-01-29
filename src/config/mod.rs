@@ -1,5 +1,5 @@
 use crate::cgroup::Cgroup;
-use crate::unit::{ms, KiB};
+use crate::resourcelimit::ResourceLimit;
 
 use nix::unistd::execvpe;
 use std::ffi::CString;
@@ -9,13 +9,6 @@ pub struct Config {
     pub cg: Cgroup,
     pub rlim: ResourceLimit,
     pub payload: Payload,
-}
-
-#[derive(Debug)]
-pub struct ResourceLimit {
-    pub stack_size: KiB,
-    pub mem_limit: Option<KiB>,
-    pub cpu_limit: Option<ms>,
 }
 
 #[derive(Debug)]

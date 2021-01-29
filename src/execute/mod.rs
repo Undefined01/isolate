@@ -18,12 +18,11 @@ pub fn run(config: &Config) -> Result<(), ()> {
         .reset()
         .map_err(|_| info!("Failed to reset control group usages"))?;
 
-    let mut stack = vec![0u8; config.rlim.stack_size.0 as usize * 1024];
+    let mut stack = vec![0u8; config.rlim.stack_size.byte() as usize];
     let proxy_pid = clone(
         Box::new(|| proxy::entry(config)),
         stack.as_mut(),
-        CloneFlags::CLONE_NEWPID
-            | CloneFlags::CLONE_NEWUTS
+         CloneFlags::CLONE_NEWUTS
             | CloneFlags::CLONE_NEWIPC
             | CloneFlags::CLONE_NEWNS
             | CloneFlags::CLONE_NEWNET,

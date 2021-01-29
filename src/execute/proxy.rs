@@ -1,5 +1,5 @@
 use crate::config::Config;
-use nix::unistd::{getpid, setpgid};
+use nix::unistd::{getpid, setpgid, Uid, Gid, setuid, setgid};
 
 pub fn entry(config: &Config) -> isize {
     let pid = getpid();
@@ -9,6 +9,12 @@ pub fn entry(config: &Config) -> isize {
 
     // 进入 control group
     config.cg.apply(pid).expect("Failed to enter control group");
+
+    config.rlim.setrlimit().expect("Failed to install resource limits");
+
+    setgid(Gid::from_raw(1000)).expect("Failed to switch to nobody");
+    setuid(Uid::from_raw(1000)).expect("Failed to switch to nobody");
+    
     config.payload.exec().expect("Failed to execute payload");
     0
 }

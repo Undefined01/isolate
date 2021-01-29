@@ -72,7 +72,7 @@ impl Cgroup {
 
     pub fn set_mem_limit(&self, lim: unit::KiB) -> Result<(), ()> {
         self.write("memory", "memory.limit_in_bytes", &lim.str_byte())
-        .map_err(|e| info!("Fail to set memory limit: {:?}", e))
+            .map_err(|e| info!("Fail to set memory limit: {:?}", e))
     }
 
     pub fn reset(&self) -> Result<(), ()> {

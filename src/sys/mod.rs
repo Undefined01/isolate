@@ -86,3 +86,12 @@ impl Drop for ProcessKeeper {
         self.kill()
     }
 }
+
+pub fn setrlimit(resource: libc::__rlimit_resource_t, rlim: &libc::rlimit) -> Result<(), Errno> {
+    let res = unsafe { libc::setrlimit(resource, rlim as *const _) };
+    if res != 0 {
+        Err(Errno::last())
+    } else {
+        Ok(())
+    }
+}
