@@ -46,7 +46,7 @@ impl ms {
     pub fn as_secs(&self) -> u64 {
         self.0 / 1000
     }
-    
+
     pub fn as_millis(&self) -> u64 {
         self.0
     }

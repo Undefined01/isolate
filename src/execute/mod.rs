@@ -22,7 +22,7 @@ pub fn run(config: &Config) -> Result<(), ()> {
     let proxy_pid = clone(
         Box::new(|| proxy::entry(config)),
         stack.as_mut(),
-         CloneFlags::CLONE_NEWUTS
+        CloneFlags::CLONE_NEWUTS
             | CloneFlags::CLONE_NEWIPC
             | CloneFlags::CLONE_NEWNS
             | CloneFlags::CLONE_NEWNET,
