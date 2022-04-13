@@ -64,7 +64,6 @@ impl<'de> Deserializer<'de> {
     where
         T: AddAssign<T> + MulAssign<T> + From<u8>,
     {
-        println!("unsigned");
         let mut int = match self.next_char()? {
             ch @ '0'..='9' => T::from(ch as u8 - b'0'),
             _ => return Err(Error::new("Parse error: Expected integer")),
@@ -84,12 +83,11 @@ impl<'de> Deserializer<'de> {
     }
 
     fn parse_string(&mut self) -> Result<&'de str> {
-        println!("string");
         if !self.peek_char()?.is_identifier() {
             return Err(Error::new("Parse error: Expected string"));
         }
         let res = &self.input[..];
-        let mut len = 1;
+        let mut len = 0;
         loop {
             match self.peek_char() {
                 Ok(ch) if ch.is_identifier() => {
@@ -97,7 +95,6 @@ impl<'de> Deserializer<'de> {
                     self.next_char()?;
                 }
                 _ => {
-                    println!("string get {} {}", len, &res[..len]);
                     return Ok(&res[..len]);
                 }
             }
@@ -112,7 +109,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
     where
         V: Visitor<'de>,
     {
-        self.deserialize_map(visitor)
+        panic!("Deserialization of arbitrary type is not supported");
     }
 
     fn deserialize_bool<V>(self, visitor: V) -> Result<V::Value>
@@ -174,7 +171,6 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
     where
         V: Visitor<'de>,
     {
-        println!("u64");
         visitor.visit_u64(self.parse_unsigned()?)
     }
 
@@ -314,14 +310,24 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
     where
         V: Visitor<'de>,
     {
-        println!("identifier");
         self.deserialize_str(visitor)
     }
     fn deserialize_ignored_any<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        self.deserialize_any(visitor)
+        // ignoring unknown field by read to end of line
+        loop {
+            let next = self.peek_char();
+            if let Err(_) = next {
+                break;
+            }
+            if let Ok('\n') = next {
+                break;
+            }
+            self.next_char().unwrap();
+        }
+        visitor.visit_str("Ignored")
     }
 }
 
@@ -359,13 +365,11 @@ impl<'de, 'a> MapAccess<'de> for Accessor<'a, 'de> {
     where
         V: DeserializeSeed<'de>,
     {
-        println!("value '{}'", self.de.peek_char()?);
         if self.de.next_char()? != ' ' {
             return Err(CGroupError::new(
                 "Parse error: Expect whitespace as the delimiter",
             ));
         }
-        println!("next");
         seed.deserialize(&mut *self.de)
     }
 }
