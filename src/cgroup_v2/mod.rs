@@ -6,6 +6,7 @@ use std::path;
 
 mod deserializer;
 mod error;
+mod cpu;
 
 use error::CGroupError;
 

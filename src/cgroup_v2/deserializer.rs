@@ -1,7 +1,5 @@
-use serde::Deserialize;
 use serde::de::{
-    self, DeserializeSeed, EnumAccess, IntoDeserializer, MapAccess, SeqAccess,
-    VariantAccess, Visitor,
+    self, DeserializeSeed, IntoDeserializer, MapAccess, Visitor,
 };
 
 use std::ops::*;
@@ -50,7 +48,7 @@ impl<'de> Deserializer<'de> {
         Ok(ch)
     }
 
-    fn parse_unsigned(&mut self) -> Result<T>
+    fn parse_unsigned<T>(&mut self) -> Result<T>
     where
         T: AddAssign<T> + MulAssign<T> + From<u8>,
     {
@@ -82,7 +80,7 @@ impl<'de> Deserializer<'de> {
         let len = 1;
         loop {
             match self.next_char() {
-            Some(ch @ ch.is_alphabetic()) => {
+            Some(ch) if ch.is_alphabetic() => {
                 len += 1;
             }
             _ => {
@@ -102,12 +100,88 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
     {
         self.deserialize_map(visitor)
     }
+    
+    fn deserialize_bool<V>(self, visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        unimplemented!()
+    }
+    fn deserialize_i8<V>(self, visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        unimplemented!()
+    }
+
+    fn deserialize_i16<V>(self, visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        unimplemented!()
+    }
+
+    fn deserialize_i32<V>(self, visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        unimplemented!()
+    }
+
+    fn deserialize_i64<V>(self, visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        unimplemented!()
+    }
+
+    fn deserialize_u8<V>(self, visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        unimplemented!()
+    }
+
+    fn deserialize_u16<V>(self, visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        unimplemented!()
+    }
+
+    fn deserialize_u32<V>(self, visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        visitor.visit_u32(self.parse_unsigned()?)
+    }
 
     fn deserialize_u64<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
         visitor.visit_u64(self.parse_unsigned()?)
+    }
+    
+    fn deserialize_f32<V>(self, _visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        unimplemented!()
+    }
+
+    fn deserialize_f64<V>(self, _visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        unimplemented!()
+    }
+
+    fn deserialize_char<V>(self, _visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+                unimplemented!()
     }
     
     fn deserialize_str<V>(self, visitor: V) -> Result<V::Value>
@@ -123,7 +197,81 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
     {
         self.deserialize_str(visitor)
     }
+
+    fn deserialize_bytes<V>(self, _visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        unimplemented!()
+    }
+
+    fn deserialize_byte_buf<V>(self, _visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        unimplemented!()
+    }
+
+    fn deserialize_option<V>(self, visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        unimplemented!()
+    }
     
+    fn deserialize_unit<V>(self, visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        unimplemented!()
+    }
+
+    fn deserialize_unit_struct<V>(
+        self,
+        _name: &'static str,
+        visitor: V,
+    ) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        self.deserialize_unit(visitor)
+    }
+    fn deserialize_newtype_struct<V>(
+        self,
+        _name: &'static str,
+        visitor: V,
+    ) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        visitor.visit_newtype_struct(self)
+    }
+    fn deserialize_seq<V>(self, visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        unimplemented!()
+    }
+
+    fn deserialize_tuple<V>(self, _len: usize, visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        self.deserialize_seq(visitor)
+    }
+
+    fn deserialize_tuple_struct<V>(
+        self,
+        _name: &'static str,
+        _len: usize,
+        visitor: V,
+    ) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        self.deserialize_seq(visitor)
+    }
+
     fn deserialize_map<V>(
         self,
         visitor: V,
@@ -146,12 +294,28 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
     {
         self.deserialize_map(visitor)
     }
+    fn deserialize_enum<V>(
+        self,
+        _name: &'static str,
+        _variants: &'static [&'static str],
+        visitor: V,
+    ) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        unimplemented!()
+    }
 
     fn deserialize_identifier<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
         self.deserialize_str(visitor)
+    }    fn deserialize_ignored_any<V>(self, visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        self.deserialize_any(visitor)
     }
 }
 
@@ -199,6 +363,8 @@ impl<'de, 'a> MapAccess<'de> for Accessor<'a, 'de> {
 
 mod tests{
     use super::*;
+    use serde::Deserialize;
+
 #[test]
 fn test() {
     #[derive(Deserialize, PartialEq, Debug)]
@@ -216,7 +382,7 @@ system_usec 1781093
 nr_periods 0
 nr_throttled 0
 throttled_usec 0"#;
-    let expected = Test::CpuStat { usage: 9304127, user: 7523033, system: 1781093};
+    let expected = Test::CpuStat { usage_usec: 9304127, user_usec: 7523033, system_usec: 1781093};
     assert_eq!(expected, from_str(input));
 }
 }
