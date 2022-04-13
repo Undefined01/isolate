@@ -24,7 +24,7 @@ impl ResourceLimit {
                 sys::setrlimit(libc::$type, &rlim)?;
             };
         }
-        set!(RLIMIT_STACK, self.stack_size.byte());
+        set!(RLIMIT_STACK, self.stack_size.as_bytes());
         set!(RLIMIT_CORE, 0);
         // set!(RLIMIT_FSIZE, 10);
         if let Some(cpu_limit) = &self.cpu_limit {
@@ -32,7 +32,7 @@ impl ResourceLimit {
             set!(RLIMIT_CPU, cpu_limit.as_secs() + 1);
         }
         if let Some(mem_limit) = &self.mem_limit {
-            set!(RLIMIT_DATA, mem_limit.byte());
+            set!(RLIMIT_DATA, mem_limit.as_bytes());
         }
         if let Some(proc_limit) = &self.proc_limit {
             set!(RLIMIT_NPROC, *proc_limit);

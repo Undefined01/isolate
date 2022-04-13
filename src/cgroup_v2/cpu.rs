@@ -1,6 +1,7 @@
 use super::deserializer;
 use super::error::CGroupError;
 use crate::unit::Time;
+use serde::Deserialize;
 
 #[derive(Debug)]
 pub struct CpuStat {
@@ -10,7 +11,7 @@ pub struct CpuStat {
 }
 
 impl CpuStat {
-    pub fn from_str(input: &str) -> Result<Self, CGroupError> {
+    pub fn from_str(s: &str) -> Result<Self, CGroupError> {
         #[derive(Deserialize, PartialEq)]
         struct CpuStatFromVfs {
             usage_usec: u64,
@@ -18,7 +19,7 @@ impl CpuStat {
             system_usec: u64,
         }
 
-        let cpu_stat = deserializer::from_str(s)?;
+        let cpu_stat: CpuStatFromVfs = deserializer::from_str(s)?;
         Ok(Self {
             usage: Time::from_micros(cpu_stat.usage_usec),
             user: Time::from_micros(cpu_stat.user_usec),

@@ -1,5 +1,5 @@
 use std::convert::{TryFrom, TryInto};
-use std::num::{ParseIntError, TryFromIntError};
+use std::num::TryFromIntError;
 use std::time::Duration;
 
 #[derive(Debug, PartialEq, PartialOrd)]
@@ -38,7 +38,7 @@ pub struct Time(u64);
 impl Time {
     /// 从秒(s)构造
     pub fn from_secs(secs: u64) -> Self {
-        Self(millis * 1000 * 1000)
+        Self(secs * 1000 * 1000)
     }
 
     /// 从毫秒(ms)构造

@@ -23,7 +23,7 @@ impl CGroupError {
     }
     pub fn from_inner_error(inner: CGroupErrorKind) -> Self {
         Self {
-            description: "Inner error",
+            description: "Inner error".into(),
             inner: Some(inner),
         }
     }
@@ -32,9 +32,10 @@ impl CGroupError {
 impl fmt::Display for CGroupError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.description)?;
-        if let Some(err) = self.inner{
+        if let Some(err) = &self.inner {
             write!(f, "{:?}", err)?;
         }
+        Ok(())
     }
 }
 
@@ -49,8 +50,8 @@ impl serde::de::Error for CGroupError {
     }
 }
 
-impl From<std::error::Error> for CGroupError {
-    fn from(error: std::error::Error) -> Self {
+impl From<std::io::Error> for CGroupError {
+    fn from(error: std::io::Error) -> Self {
         Self::from_inner_error(CGroupErrorKind::IoErr(error))
     }
 }
