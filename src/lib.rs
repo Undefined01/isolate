@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate log;
 
-pub mod cgroup;
+pub mod cgroup_v2;
 pub mod config;
 pub mod execute;
 pub mod jail;
@@ -9,6 +9,7 @@ pub mod resourcelimit;
 pub mod sys;
 pub mod unit;
 
+pub use cgroup_v2 as cgroup;
 pub use cgroup::CGroup;
 pub use config::Config;
 pub use config::Payload;

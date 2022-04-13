@@ -1,7 +1,15 @@
 use serde::Deserialize;
+use serde::de::{
+    self, DeserializeSeed, EnumAccess, IntoDeserializer, MapAccess, SeqAccess,
+    VariantAccess, Visitor,
+};
+
+use std::ops::*;
 
 use super::cpu;
 use super::error::CGroupError;
+
+type Error = CGroupError
 
 pub struct Deserializer<'de> {
     input: &'de str,
@@ -13,7 +21,7 @@ impl<'de> Deserializer<'de> {
     }
 }
 
-pub fn from_str<'a, T>(s: &'a str) -> Result<T, CGroupError>
+pub fn from_str<'a, T>(s: &'a str) -> Result<T, Error>
 where
     T: Deserialize<'a>,
 {
@@ -22,7 +30,7 @@ where
     if deserializer.input.is_empty() {
         Ok(t)
     } else {
-        Err(CGroupError::new("Parse error"))
+        Err(Error::new("Parse error: Trailing characters"))
     }
 }
 
@@ -32,7 +40,7 @@ impl<'de> Deserializer<'de> {
     }
 
     fn peek_char(&self) -> Result<char> {
-        self.input.chars().next().ok_or(Error::Eof)
+        self.input.chars().next().ok_or(Error::new("Parse error: EOF"))
     }
 
     fn next_char(&mut self) -> Result<char> {
@@ -135,7 +143,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
     where
         V: Visitor<'de>,
     {
-        deserialize_map(visitor)
+        self.deserialize_map(visitor)
     }
 
     fn deserialize_identifier<V>(self, visitor: V) -> Result<V::Value>
@@ -145,6 +153,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
         self.deserialize_str(visitor)
     }
 }
+
 struct Accessor<'a, 'de: 'a> {
     de: &'a mut Deserializer<'de>,
     first: bool,
@@ -188,14 +197,15 @@ impl<'de, 'a> MapAccess<'de> for Accessor<'a, 'de> {
 }
 
 mod tests{
+    use super::*;
 #[test]
 fn test() {
     #[derive(Deserialize, PartialEq, Debug)]
     enum Test {
         CpuStat {
-            usage_usec: u64;
-            user_usec: u64;
-            system_usec: u64;
+            usage_usec: u64,
+            user_usec: u64,
+            system_usec: u64,
         }
     }
 

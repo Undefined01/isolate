@@ -1,13 +1,13 @@
 use crate::sys;
-use crate::unit::{ms, KiB};
+use crate::unit::*;
 use nix::errno::Errno;
 use nix::libc;
 
 #[derive(Debug)]
 pub struct ResourceLimit {
-    pub stack_size: KiB,
-    pub mem_limit: Option<KiB>,
-    pub cpu_limit: Option<ms>,
+    pub stack_size: Space,
+    pub mem_limit: Option<Space>,
+    pub cpu_limit: Option<Time>,
     pub proc_limit: Option<u64>,
 }
 

@@ -1,3 +1,5 @@
+use std::fmt;
+
 #[derive(Debug)]
 pub struct CGroupError {
     description: String,
@@ -19,8 +21,24 @@ impl CGroupError {
     }
 }
 
+impl fmt::Display for CGroupError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, self.description);
+    }
+}
+
+impl std::error::Error for CGroupError {
+}
+
+impl serde::de::Error for CGroupError {
+    fn custom<T>(msg: T) -> Self where T: fmt::display{ 
+        Self::new("Deserialize error: {}", msg)
+    }
+}
+
 impl From<nix::Error> for CGroupError {
-    pub fn from(error: nix::Error) -> Self {
+    fn from(error: nix::Error) -> Self {
         Self::fromInnerError(error)
     }
 }
+
