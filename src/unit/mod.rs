@@ -7,25 +7,27 @@ pub struct Space(u64);
 
 impl Space {
     pub fn from_byte(num: u64) -> Self {
-        Self(num / 1024)
-    }
-
-    #[allow(non_snake_case)]
-    pub fn from_KiB(num: u64) -> Self {
         Self(num)
     }
 
-    pub fn try_from_str_byte(s: &str) -> Result<Self, ParseIntError> {
-        let res = s.parse::<u64>()?;
-        Ok(Self::from_byte(res))
+    pub fn from_kib(num: u64) -> Self {
+        Self(num * 1024)
     }
 
-    pub fn byte(&self) -> u64 {
-        self.0 * 1024
+    pub fn from_mib(num: u64) -> Self {
+        Self(num * 1024 * 1024)
     }
 
-    pub fn str_byte(&self) -> String {
-        self.byte().to_string()
+    pub fn as_bytes(&self) -> u64 {
+        self.0
+    }
+
+    pub fn as_kib(&self) -> u64 {
+        self.0 / 1024
+    }
+
+    pub fn as_mib(&self) -> u64 {
+        self.0 / 1024 / 1024
     }
 }
 
@@ -34,20 +36,30 @@ impl Space {
 pub struct Time(u64);
 
 impl Time {
-    pub fn from_millis(millis: u64) -> Self {
-        Self(millis)
+    /// 从秒(s)构造
+    pub fn from_secs(secs: u64) -> Self {
+        Self(millis * 1000 * 1000)
     }
 
-    pub fn try_from_str_ns(s: &str) -> Result<Self, ParseIntError> {
-        let res = s.parse::<u64>()?;
-        Ok(Time(res / 1000000))
+    /// 从毫秒(ms)构造
+    pub fn from_millis(millis: u64) -> Self {
+        Self(millis * 1000)
+    }
+
+    /// 从微秒(us)构造
+    pub fn from_micros(micros: u64) -> Self {
+        Self(micros)
     }
 
     pub fn as_secs(&self) -> u64 {
-        self.0 / 1000
+        self.0 / 1000 / 1000
     }
 
     pub fn as_millis(&self) -> u64 {
+        self.0 / 1000
+    }
+
+    pub fn as_micros(&self) -> u64 {
         self.0
     }
 }

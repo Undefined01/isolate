@@ -29,10 +29,7 @@ impl<'de> Deserializer<'de> {
     }
 }
 
-pub fn from_str<'a, T>(s: &'a str) -> Result<T>
-where
-    T: Deserialize<'a>,
-{
+pub fn from_str<'a, T>(s: &'a str) -> Result<T> where    T: Deserialize<'a> {
     let mut deserializer = Deserializer::from_str(s);
     let t = T::deserialize(&mut deserializer)?;
     if deserializer.input.is_empty() {
@@ -223,14 +220,14 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
         unimplemented!()
     }
 
-    fn deserialize_option<V>(self, visitor: V) -> Result<V::Value>
+    fn deserialize_option<V>(self, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
         unimplemented!()
     }
 
-    fn deserialize_unit<V>(self, visitor: V) -> Result<V::Value>
+    fn deserialize_unit<V>(self, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
@@ -249,7 +246,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
     {
         visitor.visit_newtype_struct(self)
     }
-    fn deserialize_seq<V>(self, visitor: V) -> Result<V::Value>
+    fn deserialize_seq<V>(self, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
@@ -298,7 +295,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
         self,
         _name: &'static str,
         _variants: &'static [&'static str],
-        visitor: V,
+        _visitor: V,
     ) -> Result<V::Value>
     where
         V: Visitor<'de>,
@@ -386,6 +383,16 @@ mod tests {
             user_usec: u64,
             system_usec: u64,
         }
+
+        let input = r#"usage_usec 9304127
+user_usec 7523033
+system_usec 1781093"#;
+        let expected = CpuStat {
+            usage_usec: 9304127,
+            user_usec: 7523033,
+            system_usec: 1781093,
+        };
+        assert_eq!(expected, from_str(input).unwrap());
 
         let input = r#"usage_usec 9304127
 user_usec 7523033

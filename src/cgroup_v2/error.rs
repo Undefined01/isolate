@@ -3,7 +3,15 @@ use std::fmt;
 #[derive(Debug)]
 pub struct CGroupError {
     description: String,
-    inner: Option<nix::Error>,
+    inner: Option<CGroupErrorKind>,
+}
+
+#[derive(Debug)]
+pub enum CGroupErrorKind {
+    CGroupErr(),
+    IoErr(std::io::Error),
+    NixErr(nix::Error),
+    ParseErr(String),
 }
 
 impl CGroupError {
@@ -13,9 +21,9 @@ impl CGroupError {
             inner: None,
         }
     }
-    pub fn fromInnerError(inner: nix::Error) -> Self {
+    pub fn from_inner_error(inner: CGroupErrorKind) -> Self {
         Self {
-            description: format!("nix error: {}", inner),
+            description: "Inner error",
             inner: Some(inner),
         }
     }
@@ -23,7 +31,10 @@ impl CGroupError {
 
 impl fmt::Display for CGroupError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description)
+        write!(f, "{}", self.description)?;
+        if let Some(err) = self.inner{
+            write!(f, "{:?}", err)?;
+        }
     }
 }
 
@@ -34,12 +45,18 @@ impl serde::de::Error for CGroupError {
     where
         T: fmt::Display,
     {
-        Self::new(format!("Deserialize error: {}", msg))
+        Self::from_inner_error(CGroupErrorKind::ParseErr(format!("{}", msg)))
+    }
+}
+
+impl From<std::error::Error> for CGroupError {
+    fn from(error: std::error::Error) -> Self {
+        Self::from_inner_error(CGroupErrorKind::IoErr(error))
     }
 }
 
 impl From<nix::Error> for CGroupError {
     fn from(error: nix::Error) -> Self {
-        Self::fromInnerError(error)
+        Self::from_inner_error(CGroupErrorKind::NixErr(error))
     }
 }
