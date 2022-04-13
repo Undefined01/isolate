@@ -1,12 +1,12 @@
+use nix::sys::statfs::{statfs, CGROUP2_SUPER_MAGIC};
 use nix::unistd::Pid;
-use nix::sys::statfs::{CGROUP2_SUPER_MAGIC, statfs};
 use std::fs;
 use std::io;
 use std::path;
 
+mod cpu;
 mod deserializer;
 mod error;
-mod cpu;
 
 use error::CGroupError;
 
@@ -21,9 +21,7 @@ impl CGroup {
     pub fn new<T: Into<String>>(hierarchy: T) -> Result<Self, CGroupError> {
         let hierarchy = hierarchy.into();
         Self::ensureCGroupV2(&hierarchy)?;
-        Ok(Self {
-            hierarchy
-        })
+        Ok(Self { hierarchy })
     }
 
     pub fn ensureCGroupV2(path: &str) -> Result<(), CGroupError> {

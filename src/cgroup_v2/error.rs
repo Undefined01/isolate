@@ -23,16 +23,18 @@ impl CGroupError {
 
 impl fmt::Display for CGroupError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description);
+        write!(f, "{}", self.description)
     }
 }
 
-impl std::error::Error for CGroupError {
-}
+impl std::error::Error for CGroupError {}
 
 impl serde::de::Error for CGroupError {
-    fn custom<T>(msg: T) -> Self where T: fmt::Display{ 
-        Self::new("Deserialize error: {}", msg)
+    fn custom<T>(msg: T) -> Self
+    where
+        T: fmt::Display,
+    {
+        Self::new(format!("Deserialize error: {}", msg))
     }
 }
 
@@ -41,4 +43,3 @@ impl From<nix::Error> for CGroupError {
         Self::fromInnerError(error)
     }
 }
-

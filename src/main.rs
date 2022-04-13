@@ -12,10 +12,7 @@ fn main() {
                 Some("/bin".into()),
                 "bin".into(),
                 None,
-                MsFlags::MS_BIND
-                    | MsFlags::MS_RDONLY
-                    | MsFlags::MS_NOSUID
-                    | MsFlags::MS_NODEV,
+                MsFlags::MS_BIND | MsFlags::MS_RDONLY | MsFlags::MS_NOSUID | MsFlags::MS_NODEV,
                 None,
             ),
             MountPoint::new(

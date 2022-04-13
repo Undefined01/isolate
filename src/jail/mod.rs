@@ -17,7 +17,10 @@ impl Jail {
             );
             let target = format!("{}/{}", self.workdir, mountpoint.target);
             if !std::path::Path::new(&target).exists() {
-                std::fs::create_dir(&target).map_err(|e| {info!("Failed to create dir: {:?}", e); nix::Error::last()})?
+                std::fs::create_dir(&target).map_err(|e| {
+                    info!("Failed to create dir: {:?}", e);
+                    nix::Error::last()
+                })?
             }
             mount(
                 mountpoint.source.as_deref(),

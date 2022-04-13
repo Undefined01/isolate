@@ -1,6 +1,5 @@
-use serde::de::{
-    self, DeserializeSeed, IntoDeserializer, MapAccess, Visitor,
-};
+use serde::de::{self, DeserializeSeed, IntoDeserializer, MapAccess, Visitor};
+use serde::Deserialize;
 
 use std::ops::*;
 
@@ -9,6 +8,16 @@ use super::error::CGroupError;
 
 type Error = CGroupError;
 type Result<T> = std::result::Result<T, Error>;
+
+trait IsIdentifier {
+    fn is_identifier(&self) -> bool;
+}
+
+impl IsIdentifier for char {
+    fn is_identifier(&self) -> bool {
+        self.is_ascii_alphanumeric() || *self == '_'
+    }
+}
 
 pub struct Deserializer<'de> {
     input: &'de str,
@@ -35,11 +44,14 @@ where
 
 impl<'de> Deserializer<'de> {
     fn is_eof(&self) -> bool {
-        self.input.length() == 0
+        self.input.len() == 0
     }
 
     fn peek_char(&self) -> Result<char> {
-        self.input.chars().next().ok_or(Error::new("Parse error: EOF"))
+        self.input
+            .chars()
+            .next()
+            .ok_or(Error::new("Parse error: EOF"))
     }
 
     fn next_char(&mut self) -> Result<char> {
@@ -52,16 +64,15 @@ impl<'de> Deserializer<'de> {
     where
         T: AddAssign<T> + MulAssign<T> + From<u8>,
     {
+        println!("unsigned");
         let mut int = match self.next_char()? {
             ch @ '0'..='9' => T::from(ch as u8 - b'0'),
-            _ => {
-                return Err(Error::ExpectedInteger);
-            }
+            _ => return Err(Error::new("Parse error: Expected integer")),
         };
         loop {
             match self.peek_char() {
-                Some(ch @ '0'..='9') => {
-                    self.next_char();
+                Ok(ch @ '0'..='9') => {
+                    self.next_char()?;
                     int *= T::from(10);
                     int += T::from(ch as u8 - b'0');
                 }
@@ -73,20 +84,23 @@ impl<'de> Deserializer<'de> {
     }
 
     fn parse_string(&mut self) -> Result<&'de str> {
-        if !self.next_char()?.is_alphabetic() {
-            return Err(Error::ExpectedString);
+        println!("string");
+        if !self.peek_char()?.is_identifier() {
+            return Err(Error::new("Parse error: Expected string"));
         }
         let res = &self.input[..];
-        let len = 1;
+        let mut len = 1;
         loop {
-            match self.next_char() {
-            Some(ch) if ch.is_alphabetic() => {
-                len += 1;
+            match self.peek_char() {
+                Ok(ch) if ch.is_identifier() => {
+                    len += 1;
+                    self.next_char()?;
+                }
+                _ => {
+                    println!("string get {} {}", len, &res[..len]);
+                    return Ok(&res[..len]);
+                }
             }
-            _ => {
-                return Ok(res[..len]);
-            },
-        }
         }
     }
 }
@@ -100,7 +114,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
     {
         self.deserialize_map(visitor)
     }
-    
+
     fn deserialize_bool<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
@@ -160,9 +174,10 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
     where
         V: Visitor<'de>,
     {
+        println!("u64");
         visitor.visit_u64(self.parse_unsigned()?)
     }
-    
+
     fn deserialize_f32<V>(self, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
@@ -181,9 +196,9 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
     where
         V: Visitor<'de>,
     {
-                unimplemented!()
+        unimplemented!()
     }
-    
+
     fn deserialize_str<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
@@ -218,7 +233,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
     {
         unimplemented!()
     }
-    
+
     fn deserialize_unit<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
@@ -226,21 +241,13 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
         unimplemented!()
     }
 
-    fn deserialize_unit_struct<V>(
-        self,
-        _name: &'static str,
-        visitor: V,
-    ) -> Result<V::Value>
+    fn deserialize_unit_struct<V>(self, _name: &'static str, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
         self.deserialize_unit(visitor)
     }
-    fn deserialize_newtype_struct<V>(
-        self,
-        _name: &'static str,
-        visitor: V,
-    ) -> Result<V::Value>
+    fn deserialize_newtype_struct<V>(self, _name: &'static str, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
@@ -272,17 +279,14 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
         self.deserialize_seq(visitor)
     }
 
-    fn deserialize_map<V>(
-        self,
-        visitor: V,
-    ) -> Result<V::Value>
+    fn deserialize_map<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
         let value = visitor.visit_map(Accessor::new(self))?;
         Ok(value)
     }
-    
+
     fn deserialize_struct<V>(
         self,
         _name: &'static str,
@@ -310,8 +314,10 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
     where
         V: Visitor<'de>,
     {
+        println!("identifier");
         self.deserialize_str(visitor)
-    }    fn deserialize_ignored_any<V>(self, visitor: V) -> Result<V::Value>
+    }
+    fn deserialize_ignored_any<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
@@ -326,10 +332,7 @@ struct Accessor<'a, 'de: 'a> {
 
 impl<'a, 'de> Accessor<'a, 'de> {
     fn new(de: &'a mut Deserializer<'de>) -> Self {
-        Self {
-            de,
-            first: true,
-        }
+        Self { de, first: true }
     }
 }
 
@@ -344,7 +347,9 @@ impl<'de, 'a> MapAccess<'de> for Accessor<'a, 'de> {
             return Ok(None);
         }
         if !self.first && self.de.next_char()? != '\n' {
-            return Err(CGroupError::new("Parse error"));
+            return Err(CGroupError::new(
+                "Parse error: Expect newline as the delimiter",
+            ));
         }
         self.first = false;
         seed.deserialize(&mut *self.de).map(Some)
@@ -354,36 +359,41 @@ impl<'de, 'a> MapAccess<'de> for Accessor<'a, 'de> {
     where
         V: DeserializeSeed<'de>,
     {
+        println!("value '{}'", self.de.peek_char()?);
         if self.de.next_char()? != ' ' {
-            return Err(CGroupError::new("Parse error"));
+            return Err(CGroupError::new(
+                "Parse error: Expect whitespace as the delimiter",
+            ));
         }
+        println!("next");
         seed.deserialize(&mut *self.de)
     }
 }
 
-mod tests{
+mod tests {
     use super::*;
     use serde::Deserialize;
 
-#[test]
-fn test() {
-    #[derive(Deserialize, PartialEq, Debug)]
-    enum Test {
-        CpuStat {
+    #[test]
+    fn test() {
+        #[derive(Deserialize, PartialEq, Debug)]
+        struct CpuStat {
             usage_usec: u64,
             user_usec: u64,
             system_usec: u64,
         }
-    }
 
-    let input = r#"usage_usec 9304127
+        let input = r#"usage_usec 9304127
 user_usec 7523033
 system_usec 1781093
 nr_periods 0
 nr_throttled 0
 throttled_usec 0"#;
-    let expected = Test::CpuStat { usage_usec: 9304127, user_usec: 7523033, system_usec: 1781093};
-    assert_eq!(expected, from_str(input));
+        let expected = CpuStat {
+            usage_usec: 9304127,
+            user_usec: 7523033,
+            system_usec: 1781093,
+        };
+        assert_eq!(expected, from_str(input).unwrap());
+    }
 }
-}
-
