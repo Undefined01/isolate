@@ -9,7 +9,8 @@ use std::ops::*;
 use super::cpu;
 use super::error::CGroupError;
 
-type Error = CGroupError
+type Error = CGroupError;
+type Result<T> = std::result::Result<T, Error>;
 
 pub struct Deserializer<'de> {
     input: &'de str,
@@ -21,7 +22,7 @@ impl<'de> Deserializer<'de> {
     }
 }
 
-pub fn from_str<'a, T>(s: &'a str) -> Result<T, Error>
+pub fn from_str<'a, T>(s: &'a str) -> Result<T>
 where
     T: Deserialize<'a>,
 {
@@ -215,7 +216,7 @@ system_usec 1781093
 nr_periods 0
 nr_throttled 0
 throttled_usec 0"#;
-    let expected = Test::CpuStat { usage: 100, user: 60, system: 40};
+    let expected = Test::CpuStat { usage: 9304127, user: 7523033, system: 1781093};
     assert_eq!(expected, from_str(input));
 }
 }

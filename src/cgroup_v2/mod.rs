@@ -20,9 +20,9 @@ impl CGroup {
     pub fn new<T: Into<String>>(hierarchy: T) -> Result<Self, CGroupError> {
         let hierarchy = hierarchy.into();
         Self::ensureCGroupV2(&hierarchy)?;
-        Self {
+        Ok(Self {
             hierarchy
-        }
+        })
     }
 
     pub fn ensureCGroupV2(path: &str) -> Result<(), CGroupError> {

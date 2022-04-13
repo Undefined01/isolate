@@ -9,21 +9,21 @@ pub struct CGroupError {
 impl CGroupError {
     pub fn new<T: Into<String>>(description: T) -> Self {
         Self {
-            description.into(),
-            None,
+            description: description.into(),
+            inner: None,
         }
     }
     pub fn fromInnerError(inner: nix::Error) -> Self {
         Self {
-            format!("nix error: {}", inner),
-            Some(inner),
+            description: format!("nix error: {}", inner),
+            inner: Some(inner),
         }
     }
 }
 
 impl fmt::Display for CGroupError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, self.description);
+        write!(f, "{}", self.description);
     }
 }
 
@@ -31,7 +31,7 @@ impl std::error::Error for CGroupError {
 }
 
 impl serde::de::Error for CGroupError {
-    fn custom<T>(msg: T) -> Self where T: fmt::display{ 
+    fn custom<T>(msg: T) -> Self where T: fmt::Display{ 
         Self::new("Deserialize error: {}", msg)
     }
 }

@@ -57,7 +57,7 @@ pub fn run(config: &Config) -> Result<(), ()> {
         let res = proxy_keeper.wait4();
         match res {
             Err(Errno::EINTR) => {
-                let real_time: unit::ms = timer
+                let real_time: unit::Time = timer
                     .elapsed()
                     .try_into()
                     .map_err(|e| info!("Failed to get real running time: {:?}", e))?;
@@ -74,7 +74,7 @@ pub fn run(config: &Config) -> Result<(), ()> {
             }
         }
     };
-    let real_time: unit::ms = timer
+    let real_time: unit::Time = timer
         .elapsed()
         .try_into()
         .map_err(|e| info!("Failed to get real running time: {:?}", e))?;
