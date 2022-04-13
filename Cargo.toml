@@ -8,8 +8,8 @@ edition = "2018"
 
 [dependencies]
 log = "0.4"
-env_logger = "0.8"
-nix = "0.19"
+env_logger = "0.9"
+nix = "0.23"
 
 [profile.dev]
 panic = "abort" 

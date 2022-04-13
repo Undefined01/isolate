@@ -3,9 +3,9 @@ use std::num::{ParseIntError, TryFromIntError};
 use std::time::Duration;
 
 #[derive(Debug, PartialEq, PartialOrd)]
-pub struct KiB(u64);
+pub struct Space(u64);
 
-impl KiB {
+impl Space {
     pub fn from_byte(num: u64) -> Self {
         Self(num / 1024)
     }
@@ -31,16 +31,16 @@ impl KiB {
 
 #[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, PartialOrd)]
-pub struct ms(u64);
+pub struct Time(u64);
 
-impl ms {
+impl Time {
     pub fn from_millis(millis: u64) -> Self {
         Self(millis)
     }
 
     pub fn try_from_str_ns(s: &str) -> Result<Self, ParseIntError> {
         let res = s.parse::<u64>()?;
-        Ok(ms(res / 1000000))
+        Ok(Time(res / 1000000))
     }
 
     pub fn as_secs(&self) -> u64 {
@@ -52,7 +52,7 @@ impl ms {
     }
 }
 
-impl TryFrom<Duration> for ms {
+impl TryFrom<Duration> for Time {
     type Error = TryFromIntError;
     fn try_from(d: Duration) -> Result<Self, Self::Error> {
         d.as_millis().try_into().map(|x| Self(x))

@@ -1,4 +1,4 @@
-use crate::cgroup::Cgroup;
+use crate::cgroup::CGroup;
 use crate::resourcelimit::ResourceLimit;
 
 use nix::unistd::execvpe;
@@ -6,7 +6,7 @@ use std::ffi::CString;
 
 #[derive(Debug)]
 pub struct Config {
-    pub cg: Cgroup,
+    pub cg: CGroup,
     pub rlim: ResourceLimit,
     pub payload: Payload,
 }

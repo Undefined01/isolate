@@ -9,7 +9,7 @@ pub mod resourcelimit;
 pub mod sys;
 pub mod unit;
 
-pub use cgroup::Cgroup;
+pub use cgroup::CGroup;
 pub use config::Config;
 pub use config::Payload;
 pub use jail::Jail;

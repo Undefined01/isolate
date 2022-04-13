@@ -88,7 +88,7 @@ pub fn run(config: &Config) -> Result<(), ()> {
         .map_err(|_| info!("Failed to get memory usage"))?;
 
     info!(
-        "Execute result: {}\nCgroup: {:?} {:?}\nReal time: {:?}\n{:#?}",
+        "Execute result: {}\nCGroup: {:?} {:?}\nReal time: {:?}\n{:#?}",
         status, cpu_usage, mem_usage, real_time, rus
     );
 

@@ -49,7 +49,7 @@ fn main() {
     .apply()
     .expect("Failed to mount jail");
 
-    // let cg = isolate::Cgroup::new("/sys/fs/cgroup", "box1");
+    // let cg = isolate::CGroup::new("/sys/fs/cgroup", "box1");
     // cg.init().expect("Failed to create control groups");
     // let rlim = isolate::ResourceLimit {
     //     stack_size: isolate::unit::KiB::from_KiB(8 * 1024),
